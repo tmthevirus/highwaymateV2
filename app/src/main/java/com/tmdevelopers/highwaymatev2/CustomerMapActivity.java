@@ -122,58 +122,58 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                     driverFound = true;
                     driverFoundId = key;
 
-                    DatabaseReference driverRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundId).child("customerRequest");
+                    DatabaseReference driverRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundId);
                     String customerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     HashMap map = new HashMap();
-                    //adding the customer id to driver
                     map.put("customerRideId", customerId);
                     driverRef.updateChildren(map);
 
-                    getDriverLoction();
-                    mRequest.setText("Looking for bus Location");
+                    getDriverLocation();
+                    mRequest.setText("Looking for Buses....");
                 }
 
             }
 
             Marker mDriverMarker;
 
-            private void getDriverLoction(){
+            private void getDriverLocation(){
 
-                DatabaseReference driverLocationRef = FirebaseDatabase.getInstance().getReference().child("driversWorking").child("Drivers").child(driverFoundId);
+                DatabaseReference driverLocationRef = FirebaseDatabase.getInstance().getReference().child("driversWorking").child(driverFoundId).child("l");
                 driverLocationRef.addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    public void onDataChange(DataSnapshot dataSnapshot) {
                         if(dataSnapshot.exists()){
                             List<Object> map = (List<Object>) dataSnapshot.getValue();
                             double locationLat = 0;
                             double locationLng = 0;
-                            mRequest.setText("Bus Found!");
-                            if(map.get(0)!= null){
+                            mRequest.setText("Driver Found");
+                            if(map.get(0) != null){
                                 locationLat = Double.parseDouble(map.get(0).toString());
                             }
-                            if(map.get(1)!= null){
-                                locationLng = Double.parseDouble(map.get(0).toString());
+                            if(map.get(1) != null){
+                                locationLng = Double.parseDouble(map.get(1).toString());
                             }
-                            LatLng driverLatLang = new LatLng(locationLat, locationLng);
-                            if ((mDriverMarker != null)){
+                            LatLng driverLatLng = new LatLng(locationLat,locationLng);
+                            if(mDriverMarker != null){
                                 mDriverMarker.remove();
                             }
-
                             Location loc1 = new Location("");
                             loc1.setLatitude(pickUpLocation.latitude);
                             loc1.setLongitude(pickUpLocation.longitude);
 
                             Location loc2 = new Location("");
-                            loc2.setLatitude(driverLatLang.latitude);
-                            loc2.setLongitude(driverLatLang.longitude);
+                            loc2.setLatitude(driverLatLng.latitude);
+                            loc2.setLongitude(driverLatLng.longitude);
 
-                            float distence = loc1.distanceTo(loc2);
+                            float distance = loc1.distanceTo(loc2);
 
-                            mRequest.setText("Your bus is " + String.valueOf(distence));
+                            mRequest.setText("Driver Found: " + String.valueOf(distance));
 
-                            mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLang).title("Your Bus"));
+                            mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLng).title("your driver"));
                         }
+
                     }
+
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {

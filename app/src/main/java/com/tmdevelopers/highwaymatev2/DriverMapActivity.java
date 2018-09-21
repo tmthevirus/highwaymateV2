@@ -158,7 +158,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
             switch (customerId){
                 case "":
-                    //geoFireWorking.removeLocation(userId);
+                    geoFireWorking.removeLocation(userId);
                     geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()), new GeoFire.CompletionListener() {
                         @Override
                         public void onComplete(String key, DatabaseError error) {
