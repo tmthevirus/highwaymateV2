@@ -3,7 +3,6 @@ package com.tmdevelopers.highwaymatev2;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -14,10 +13,10 @@ import android.widget.Button;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,11 +24,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.List;
 
 
 public class CustomerMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
@@ -83,6 +88,8 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                  mMap.addMarker(new MarkerOptions().position(pickUpLocation).title("I'm Here!"));
 
                  mRequest.setText("Please Wait!");
+
+                 getClosestDriver();
             }
         });
 
@@ -91,6 +98,114 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         buildGoogleApiClient();
 
 
+    }
+
+    private int radius = 1;
+    private boolean driverFound = false;
+    private String driverFoundId;
+
+    private void getClosestDriver(){
+
+        DatabaseReference driverLocation = FirebaseDatabase.getInstance().getReference().child("driversAvailable");
+
+        GeoFire geoFire = new GeoFire(driverLocation);
+
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(pickUpLocation.latitude, pickUpLocation.longitude), radius);
+        geoQuery.removeAllListeners();
+
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+
+                if(!driverFound){
+
+                    driverFound = true;
+                    driverFoundId = key;
+
+                    DatabaseReference driverRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverFoundId).child("customerRequest");
+                    String customerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    HashMap map = new HashMap();
+                    //adding the customer id to driver
+                    map.put("customerRideId", customerId);
+                    driverRef.updateChildren(map);
+
+                    getDriverLoction();
+                    mRequest.setText("Looking for bus Location");
+                }
+
+            }
+
+            Marker mDriverMarker;
+
+            private void getDriverLoction(){
+
+                DatabaseReference driverLocationRef = FirebaseDatabase.getInstance().getReference().child("driversWorking").child("Drivers").child(driverFoundId);
+                driverLocationRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.exists()){
+                            List<Object> map = (List<Object>) dataSnapshot.getValue();
+                            double locationLat = 0;
+                            double locationLng = 0;
+                            mRequest.setText("Bus Found!");
+                            if(map.get(0)!= null){
+                                locationLat = Double.parseDouble(map.get(0).toString());
+                            }
+                            if(map.get(1)!= null){
+                                locationLng = Double.parseDouble(map.get(0).toString());
+                            }
+                            LatLng driverLatLang = new LatLng(locationLat, locationLng);
+                            if ((mDriverMarker != null)){
+                                mDriverMarker.remove();
+                            }
+
+                            Location loc1 = new Location("");
+                            loc1.setLatitude(pickUpLocation.latitude);
+                            loc1.setLongitude(pickUpLocation.longitude);
+
+                            Location loc2 = new Location("");
+                            loc2.setLatitude(driverLatLang.latitude);
+                            loc2.setLongitude(driverLatLang.longitude);
+
+                            float distence = loc1.distanceTo(loc2);
+
+                            mRequest.setText("Your bus is " + String.valueOf(distence));
+
+                            mDriverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLang).title("Your Bus"));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+                if(!driverFound){
+                    radius++;
+                    getClosestDriver();
+                }
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
     }
 
 
