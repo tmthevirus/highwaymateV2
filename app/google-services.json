@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "460035724134",
+    "firebase_url": "https://highwaymatev2-e6d05.firebaseio.com",
+    "project_id": "highwaymatev2-e6d05",
+    "storage_bucket": "highwaymatev2-e6d05.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460035724134:android:cd6254f437d7859e",
+        "android_client_info": {
+          "package_name": "com.tmdevelopers.highwaymatev2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "460035724134-l6tbajgpvaa9uadvh9u4g34ujbeq1d8i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tmdevelopers.highwaymatev2",
+            "certificate_hash": "a0535b83b83bead7dad2e1c8853ba0348d1e6063"
+          }
+        },
+        {
+          "client_id": "460035724134-gsg73qte7psc53l36p5p6j6vgcvfls4n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeZzvq9l1uGTr6zE4WZLnXcIKd0iTnE-U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "460035724134-gsg73qte7psc53l36p5p6j6vgcvfls4n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
